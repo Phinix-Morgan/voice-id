@@ -1,0 +1,1283 @@
+:root {
+    --black: #000000;
+    --white: #ffffff;
+
+    --gray-100: #f5f5f5;
+    --gray-200: #e8e8e8;
+    --gray-400: #a0a0a0;
+    --gray-600: #666666;
+    --gray-800: #222222;
+
+    --border: #dddddd;
+
+    --max-width: 1180px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Reset
+   -------------------------------------------------------------------------- */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+html {
+    font-size: 16px;
+}
+
+
+body {
+    min-height: 100vh;
+
+    background: var(--white);
+    color: var(--black);
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+
+button,
+input {
+    font: inherit;
+}
+
+
+button {
+    cursor: pointer;
+}
+
+
+/* --------------------------------------------------------------------------
+   Layout
+   -------------------------------------------------------------------------- */
+
+.app-shell {
+    width: min(
+        calc(100% - 48px),
+        var(--max-width)
+    );
+
+    margin: 0 auto;
+    padding-bottom: 120px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Top bar
+   -------------------------------------------------------------------------- */
+
+.topbar {
+    height: 88px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid var(--border);
+}
+
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+
+.brand-mark {
+    width: 30px;
+    height: 30px;
+
+    display: grid;
+    place-items: center;
+
+    background: var(--black);
+    color: var(--white);
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.version {
+    color: var(--gray-600);
+
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+}
+
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.hero {
+    max-width: 820px;
+
+    padding-top: 120px;
+    padding-bottom: 72px;
+}
+
+
+.eyebrow {
+    margin-bottom: 18px;
+
+    color: var(--gray-600);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+}
+
+
+.hero h1 {
+    max-width: 760px;
+
+    font-size: clamp(
+        52px,
+        7vw,
+        92px
+    );
+
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+    font-weight: 700;
+}
+
+
+.hero h1 span {
+    display: block;
+
+    color: var(--gray-400);
+}
+
+
+.hero-description {
+    max-width: 580px;
+
+    margin-top: 32px;
+
+    color: var(--gray-600);
+
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+
+/* --------------------------------------------------------------------------
+   Upload
+   -------------------------------------------------------------------------- */
+
+.upload-section {
+    width: 100%;
+}
+
+
+.upload-card {
+    border: 1px solid var(--black);
+}
+
+
+.upload-zone {
+    min-height: 280px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 48px;
+
+    background: var(--white);
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition:
+        background 160ms ease,
+        color 160ms ease;
+}
+
+
+.upload-zone:hover {
+    background: var(--black);
+    color: var(--white);
+}
+
+
+.upload-zone:hover .upload-subtitle {
+    color: #aaaaaa;
+}
+
+
+.upload-zone.dragover {
+    background: var(--black);
+    color: var(--white);
+}
+
+
+.upload-zone.dragover .upload-subtitle {
+    color: #aaaaaa;
+}
+
+
+.upload-icon {
+    width: 46px;
+    height: 46px;
+
+    display: grid;
+    place-items: center;
+
+    margin-bottom: 24px;
+
+    border: 1px solid currentColor;
+
+    font-size: 24px;
+    font-weight: 300;
+}
+
+
+.upload-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+.upload-subtitle {
+    margin-top: 10px;
+
+    color: var(--gray-600);
+
+    font-size: 13px;
+
+    transition: color 160ms ease;
+}
+
+
+.selected-file {
+    min-height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 20px;
+
+    border-top: 1px solid var(--border);
+
+    font-size: 13px;
+}
+
+
+.selected-file span {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.selected-file button {
+    width: 30px;
+    height: 30px;
+
+    border: 0;
+
+    background: transparent;
+    color: var(--black);
+
+    font-size: 22px;
+}
+
+
+.selected-file button:hover {
+    background: var(--gray-100);
+}
+
+
+.analyze-button {
+    width: 100%;
+    height: 64px;
+
+    border: 0;
+    border-top: 1px solid var(--black);
+
+    background: var(--black);
+    color: var(--white);
+
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    transition:
+        background 160ms ease,
+        color 160ms ease;
+}
+
+
+.analyze-button:hover:not(:disabled) {
+    background: var(--gray-800);
+}
+
+
+.analyze-button:disabled {
+    background: var(--gray-200);
+    color: var(--gray-400);
+
+    cursor: not-allowed;
+}
+
+
+/* --------------------------------------------------------------------------
+   Processing
+   -------------------------------------------------------------------------- */
+
+.processing {
+    padding: 80px 0;
+
+    border-bottom: 1px solid var(--border);
+
+    text-align: center;
+}
+
+
+.loader {
+    width: 28px;
+    height: 28px;
+
+    margin: 0 auto 24px;
+
+    border: 2px solid var(--gray-200);
+    border-top-color: var(--black);
+
+    border-radius: 50%;
+
+    animation: spin 800ms linear infinite;
+}
+
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+.processing-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+.processing-subtitle {
+    margin-top: 8px;
+
+    color: var(--gray-600);
+
+    font-size: 13px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Error
+   -------------------------------------------------------------------------- */
+
+.error-panel {
+    margin-top: 32px;
+    padding: 24px;
+
+    border: 1px solid var(--black);
+
+    background: var(--black);
+    color: var(--white);
+}
+
+
+.error-label {
+    margin-bottom: 10px;
+
+    color: #999999;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+
+#error-message {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* --------------------------------------------------------------------------
+   Results
+   -------------------------------------------------------------------------- */
+
+.results {
+    padding-top: 100px;
+}
+
+
+.results-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 32px;
+
+    padding-bottom: 40px;
+
+    border-bottom: 1px solid var(--black);
+}
+
+
+.results-header h2 {
+    font-size: clamp(
+        36px,
+        5vw,
+        60px
+    );
+
+    line-height: 1;
+
+    letter-spacing: -0.045em;
+}
+
+
+.reset-button {
+    flex-shrink: 0;
+
+    height: 44px;
+
+    padding: 0 18px;
+
+    border: 1px solid var(--black);
+
+    background: var(--white);
+    color: var(--black);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    transition:
+        background 160ms ease,
+        color 160ms ease;
+}
+
+
+.reset-button:hover {
+    background: var(--black);
+    color: var(--white);
+}
+
+
+/* --------------------------------------------------------------------------
+   Audio result
+   -------------------------------------------------------------------------- */
+
+.audio-result {
+    margin-top: 32px;
+
+    border: 1px solid var(--border);
+
+    background: var(--white);
+}
+
+
+.audio-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+
+.audio-result-label {
+    margin-bottom: 6px;
+
+    color: var(--gray-600);
+
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+
+.audio-result-name {
+    overflow: hidden;
+
+    color: var(--black);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.audio-result-meta {
+    flex-shrink: 0;
+
+    color: var(--gray-600);
+
+    font-size: 11px;
+}
+
+
+.audio-player {
+    width: 100%;
+
+    display: block;
+
+    padding: 18px 20px;
+
+    background: var(--white);
+}
+
+
+/*
+ * Keep the browser-native player intentionally minimal.
+ * The surrounding card carries the visual identity.
+ */
+
+.audio-player audio {
+    width: 100%;
+}
+
+
+/* --------------------------------------------------------------------------
+   Audio metadata
+   -------------------------------------------------------------------------- */
+
+.audio-metadata {
+    display: flex;
+    flex-wrap: wrap;
+
+    border-top: 1px solid var(--border);
+}
+
+
+.audio-metadata-item {
+    min-width: 140px;
+    flex: 1;
+
+    padding: 16px 20px;
+
+    border-right: 1px solid var(--border);
+}
+
+
+.audio-metadata-item:last-child {
+    border-right: 0;
+}
+
+
+.audio-metadata-label {
+    margin-bottom: 6px;
+
+    color: var(--gray-600);
+
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+
+.audio-metadata-value {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* --------------------------------------------------------------------------
+   Speakers
+   -------------------------------------------------------------------------- */
+
+.speaker-list {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    padding: 24px 0;
+}
+
+
+.speaker {
+    padding: 10px 14px;
+
+    border: 1px solid var(--border);
+
+    background: var(--white);
+    color: var(--black);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    transition:
+        background 160ms ease,
+        color 160ms ease,
+        border-color 160ms ease;
+}
+
+
+.speaker:hover {
+    border-color: var(--black);
+}
+
+
+.speaker.active {
+    border-color: var(--black);
+
+    background: var(--black);
+    color: var(--white);
+}
+
+
+.speaker:focus-visible,
+.reset-button:focus-visible,
+.analyze-button:focus-visible,
+.selected-file button:focus-visible {
+    outline: 2px solid var(--black);
+    outline-offset: 3px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Transcript
+   -------------------------------------------------------------------------- */
+
+.transcript-panel {
+    margin-top: 32px;
+
+    border-top: 1px solid var(--black);
+}
+
+
+.panel-heading {
+    padding: 18px 0;
+
+    border-bottom: 1px solid var(--border);
+
+    color: var(--gray-600);
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+
+.transcript-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    padding: 18px 0;
+
+    border-bottom: 1px solid var(--border);
+}
+
+
+.transcript-panel-header .panel-heading {
+    padding: 0;
+    border: 0;
+}
+
+
+.transcript-hint {
+    color: var(--gray-400);
+
+    font-size: 10px;
+}
+
+
+.transcript-segment {
+    display: grid;
+
+    grid-template-columns:
+        110px
+        150px
+        1fr;
+
+    gap: 32px;
+
+    padding: 30px 0;
+
+    border-bottom: 1px solid var(--border);
+
+    transition:
+        background 160ms ease,
+        padding 160ms ease;
+}
+
+
+.transcript-segment:hover {
+    background: var(--gray-100);
+}
+
+
+.transcript-segment.clickable {
+    cursor: pointer;
+}
+
+
+.transcript-segment.active {
+    background: var(--gray-100);
+}
+
+
+.transcript-time {
+    color: var(--gray-600);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+
+    font-size: 11px;
+}
+
+
+.transcript-speaker {
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+
+.transcript-text {
+    max-width: 650px;
+
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+
+/* --------------------------------------------------------------------------
+   Transcript speaker states
+   -------------------------------------------------------------------------- */
+
+.transcript-segment[data-speaker="shiv"] .transcript-speaker {
+    color: var(--black);
+}
+
+
+.transcript-segment[data-speaker^="speaker_"] .transcript-speaker {
+    color: var(--gray-600);
+}
+
+
+/* --------------------------------------------------------------------------
+   Empty state
+   -------------------------------------------------------------------------- */
+
+.empty-state {
+    padding: 64px 0;
+
+    border-bottom: 1px solid var(--border);
+
+    color: var(--gray-600);
+
+    text-align: center;
+}
+
+
+.empty-state-title {
+    color: var(--black);
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+
+.empty-state-subtitle {
+    margin-top: 8px;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* --------------------------------------------------------------------------
+   Analysis status
+   -------------------------------------------------------------------------- */
+
+.analysis-status {
+    margin-top: 32px;
+
+    padding: 20px;
+
+    border: 1px solid var(--border);
+
+    background: var(--white);
+}
+
+
+.analysis-status-label {
+    margin-bottom: 8px;
+
+    color: var(--gray-600);
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+
+.analysis-status-message {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* --------------------------------------------------------------------------
+   Error variants
+   -------------------------------------------------------------------------- */
+
+.error-panel.retryable {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+}
+
+
+.error-content {
+    min-width: 0;
+}
+
+
+.error-retry-button {
+    flex-shrink: 0;
+
+    height: 40px;
+
+    padding: 0 16px;
+
+    border: 1px solid var(--white);
+
+    background: var(--black);
+    color: var(--white);
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+
+.error-retry-button:hover {
+    background: var(--white);
+    color: var(--black);
+}
+
+
+/* --------------------------------------------------------------------------
+   Hidden utility
+   -------------------------------------------------------------------------- */
+
+.hidden {
+    display: none !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   Disabled / loading states
+   -------------------------------------------------------------------------- */
+
+.is-loading {
+    pointer-events: none;
+}
+
+
+.analyze-button.is-loading {
+    background: var(--gray-800);
+    color: var(--white);
+}
+
+
+.analyze-button.is-loading::after {
+    content: "";
+
+    display: inline-block;
+
+    width: 12px;
+    height: 12px;
+
+    margin-left: 10px;
+
+    vertical-align: -2px;
+
+    border: 1px solid #777777;
+    border-top-color: var(--white);
+
+    border-radius: 50%;
+
+    animation: spin 700ms linear infinite;
+}
+
+
+/* --------------------------------------------------------------------------
+   Upload validation
+   -------------------------------------------------------------------------- */
+
+.upload-card.invalid {
+    border-color: var(--black);
+}
+
+
+.selected-file.invalid {
+    background: var(--gray-100);
+}
+
+
+.file-error {
+    padding: 12px 20px;
+
+    border-top: 1px solid var(--border);
+
+    color: var(--black);
+
+    font-size: 12px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+
+    .app-shell {
+        width: min(
+            calc(100% - 32px),
+            var(--max-width)
+        );
+    }
+
+
+    .topbar {
+        height: 72px;
+    }
+
+
+    .hero {
+        padding-top: 80px;
+        padding-bottom: 52px;
+    }
+
+
+    .hero h1 {
+        font-size: clamp(
+            48px,
+            15vw,
+            72px
+        );
+    }
+
+
+    .upload-zone {
+        min-height: 230px;
+
+        padding: 32px 20px;
+    }
+
+
+    .results-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+
+    .transcript-segment {
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+
+        padding: 24px 0;
+    }
+
+
+    .transcript-text {
+        font-size: 15px;
+    }
+
+
+    .audio-result-header {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+
+    .audio-result-meta {
+        align-self: flex-start;
+    }
+
+
+    .audio-metadata {
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+    }
+
+
+    .audio-metadata-item {
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+
+    .audio-metadata-item:nth-child(2n) {
+        border-right: 0;
+    }
+
+
+    .audio-metadata-item:nth-last-child(-n + 2) {
+        border-bottom: 0;
+    }
+
+
+    .transcript-panel-header {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+
+    .transcript-hint {
+        display: none;
+    }
+
+
+    .error-panel.retryable {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+
+    .error-retry-button {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .app-shell {
+        width: calc(100% - 24px);
+    }
+
+
+    .brand {
+        gap: 8px;
+
+        font-size: 11px;
+    }
+
+
+    .brand-mark {
+        width: 26px;
+        height: 26px;
+    }
+
+
+    .version {
+        font-size: 9px;
+    }
+
+
+    .hero h1 {
+        font-size: 46px;
+
+        letter-spacing: -0.06em;
+    }
+
+
+    .hero-description {
+        font-size: 14px;
+    }
+
+
+    .upload-zone {
+        min-height: 210px;
+    }
+
+
+    .upload-title {
+        font-size: 16px;
+    }
+
+
+    .upload-subtitle {
+        font-size: 11px;
+    }
+
+
+    .selected-file {
+        padding: 0 14px;
+
+        font-size: 11px;
+    }
+
+
+    .results {
+        padding-top: 72px;
+    }
+
+
+    .results-header h2 {
+        font-size: 40px;
+    }
+
+
+    .speaker-list {
+        gap: 6px;
+    }
+
+
+    .speaker {
+        padding: 8px 11px;
+
+        font-size: 11px;
+    }
+
+
+    .transcript-text {
+        font-size: 14px;
+    }
+
+
+    .audio-metadata {
+        grid-template-columns: 1fr;
+    }
+
+
+    .audio-metadata-item,
+    .audio-metadata-item:nth-child(2n) {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+
+    .audio-metadata-item:last-child {
+        border-bottom: 0;
+    }
+
+}
+
+
+/* --------------------------------------------------------------------------
+   Transcript timestamp — clean editorial treatment
+   -------------------------------------------------------------------------- */
+
+.transcript-time {
+    display: block;
+
+    padding: 0;
+    border: 0;
+
+    background: transparent;
+    color: var(--gray-600);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.45;
+
+    letter-spacing: 0.02em;
+    white-space: pre-line;
+}
+
+
+/* Keep timestamp text visually aligned without the old bounding box. */
+.transcript-time button,
+.transcript-time a {
+    padding: 0;
+    border: 0;
+
+    background: transparent;
+    color: inherit;
+
+    font: inherit;
+    text-decoration: none;
+}
+
+
+/* --------------------------------------------------------------------------
+   Audio result text — clean spacing / positioning
+   -------------------------------------------------------------------------- */
+
+.audio-result-header {
+    align-items: flex-start;
+}
+
+
+.audio-result-label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    line-height: 1.2;
+}
+
+
+.audio-result-name {
+    display: block;
+
+    margin-top: 0;
+
+    line-height: 1.35;
+}
+
+
+/* Prevent accidental browser text-selection styling from making the
+   metadata look like a permanent UI element. */
+.audio-result-header ::selection {
+    background: var(--gray-200);
+    color: var(--black);
+}

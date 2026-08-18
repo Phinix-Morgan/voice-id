@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Voice ID</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <main class="app-shell">
+
+        <!-- ==============================================================
+             Top bar
+             ============================================================== -->
+
+        <header class="topbar">
+
+            <div class="brand">
+                <span class="brand-mark">V</span>
+                <span>VOICE ID</span>
+            </div>
+
+            <span class="version">
+                V1
+            </span>
+
+        </header>
+
+
+        <!-- ==============================================================
+             Hero
+             ============================================================== -->
+
+        <section class="hero">
+
+            <p class="eyebrow">
+                SPEAKER INTELLIGENCE
+            </p>
+
+            <h1>
+                Understand
+                <span>who said what.</span>
+            </h1>
+
+            <p class="hero-description">
+                Upload an audio recording to identify known
+                speakers, discover unknown voices, and generate
+                a timestamped transcript.
+            </p>
+
+        </section>
+
+
+        <!-- ==============================================================
+             Upload
+             ============================================================== -->
+
+        <section class="upload-section">
+
+            <form
+                id="upload-form"
+                class="upload-card"
+            >
+
+                <input
+                    id="audio-input"
+                    name="audio"
+                    type="file"
+                    accept=".wav,.mp3,.aac,.m4a,.flac,.ogg,.webm,audio/*"
+                    hidden
+                >
+
+
+                <label
+                    for="audio-input"
+                    class="upload-zone"
+                    id="upload-zone"
+                >
+
+                    <div class="upload-icon">
+                        +
+                    </div>
+
+                    <div class="upload-title">
+                        Upload audio
+                    </div>
+
+                    <div class="upload-subtitle">
+                        WAV, MP3, AAC, M4A, FLAC, OGG or WEBM
+                    </div>
+
+                </label>
+
+
+                <div
+                    class="selected-file"
+                    id="selected-file"
+                    hidden
+                >
+
+                    <span id="file-name"></span>
+
+                    <button
+                        type="button"
+                        id="remove-file"
+                        aria-label="Remove file"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="analyze-button"
+                    id="analyze-button"
+                    disabled
+                >
+                    Analyze audio
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- ==============================================================
+             Processing
+             ============================================================== -->
+
+        <section
+            class="processing"
+            id="processing"
+            hidden
+        >
+
+            <div class="loader"></div>
+
+            <p class="processing-title">
+                Analyzing audio
+            </p>
+
+            <p class="processing-subtitle">
+                Speaker identification, transcription and alignment
+                are running.
+            </p>
+
+        </section>
+
+
+        <!-- ==============================================================
+             Error
+             ============================================================== -->
+
+        <section
+            class="error-panel"
+            id="error-panel"
+            hidden
+        >
+
+            <p class="error-label">
+                ANALYSIS ERROR
+            </p>
+
+            <p id="error-message"></p>
+
+        </section>
+
+
+        <!-- ==============================================================
+             Results
+             ============================================================== -->
+
+        <section
+            class="results"
+            id="results"
+            hidden
+        >
+
+            <!-- ----------------------------------------------------------
+                 Result header
+                 ---------------------------------------------------------- -->
+
+            <div class="results-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        ANALYSIS RESULT
+                    </p>
+
+                    <h2>
+                        Speaker transcript
+                    </h2>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="reset-button"
+                    id="reset-button"
+                >
+                    New analysis
+                </button>
+
+            </div>
+
+
+            <!-- ----------------------------------------------------------
+                 Audio player
+                 ---------------------------------------------------------- -->
+
+            <div
+                class="audio-player"
+                id="audio-player"
+            >
+
+                <div class="audio-player-header">
+
+                    <div>
+
+                        <p class="panel-label">
+                            AUDIO
+                        </p>
+
+                        <p
+                            class="audio-file-name"
+                            id="audio-file-name"
+                        >
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <audio
+                    id="audio"
+                    controls
+                    preload="metadata"
+                >
+                </audio>
+
+            </div>
+
+
+            <!-- ----------------------------------------------------------
+                 Speakers
+                 ---------------------------------------------------------- -->
+
+            <div class="speaker-section">
+
+                <div class="speaker-section-header">
+
+                    <p class="panel-label">
+                        SPEAKERS
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="speaker-list"
+                    id="speaker-list"
+                    role="list"
+                    aria-label="Speakers"
+                ></div>
+
+            </div>
+
+
+            <!-- ----------------------------------------------------------
+                 Transcript
+                 ---------------------------------------------------------- -->
+
+            <div class="transcript-panel">
+
+                <div class="panel-heading">
+
+                    <span>
+                        TRANSCRIPT
+                    </span>
+
+                    <span class="transcript-hint">
+                        Select a segment to jump to its timestamp
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="transcript"
+                    id="transcript"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <script
+        src="{{ url_for('static', filename='js/app.js') }}"
+    ></script>
+
+</body>
+</html>

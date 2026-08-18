@@ -1,0 +1,17 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.env
+
+# Evaluation / generated data
+data/
+
+# Downloaded / local pretrained models
+pretrained_models/

@@ -1,0 +1,30 @@
+[project]
+name = "voice-id"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Phinix-Morgan", email = "chauhanshiv2005@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.3",
+    "google-genai>=2.18.1",
+    "matplotlib>=3.11.1",
+    "numpy>=2.5.2",
+    "python-dotenv>=1.2.3",
+    "scikit-learn>=1.9.0",
+    "sounddevice>=0.5.5",
+    "soundfile>=0.14.0",
+    "speechbrain>=1.1.0",
+    "torch>=2.13.0",
+    "torchaudio>=2.11.0",
+    "torchcodec>=0.16.0",
+]
+
+[project.scripts]
+voice-id = "voice_id:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"

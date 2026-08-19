@@ -2,321 +2,216 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice ID</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
+<main class="app-shell">
 
-    <main class="app-shell">
+    <!-- Header -->
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-mark">V</span>
+            <span class="brand-name">VOICE ID</span>
+        </div>
+        <span class="version">V1</span>
+    </header>
 
-        <!-- ==============================================================
-             Top bar
-             ============================================================== -->
+    <!-- Hero / default landing state -->
+    <section class="hero">
+        <p class="eyebrow">SPEAKER INTELLIGENCE</p>
 
-        <header class="topbar">
+        <h1>
+            Understand
+            <span>who said what.</span>
+        </h1>
 
-            <div class="brand">
-                <span class="brand-mark">V</span>
-                <span>VOICE ID</span>
-            </div>
+        <p class="hero-description">
+            Upload an audio recording to identify known speakers,
+            discover unknown voices, and generate a timestamped transcript.
+        </p>
+    </section>
 
-            <span class="version">
-                V1
-            </span>
+    <!-- Upload -->
+    <section class="upload-section">
+        <form id="upload-form" class="upload-card">
 
-        </header>
-
-
-        <!-- ==============================================================
-             Hero
-             ============================================================== -->
-
-        <section class="hero">
-
-            <p class="eyebrow">
-                SPEAKER INTELLIGENCE
-            </p>
-
-            <h1>
-                Understand
-                <span>who said what.</span>
-            </h1>
-
-            <p class="hero-description">
-                Upload an audio recording to identify known
-                speakers, discover unknown voices, and generate
-                a timestamped transcript.
-            </p>
-
-        </section>
-
-
-        <!-- ==============================================================
-             Upload
-             ============================================================== -->
-
-        <section class="upload-section">
-
-            <form
-                id="upload-form"
-                class="upload-card"
+            <input
+                id="audio-input"
+                name="audio"
+                type="file"
+                accept=".wav,.mp3,.aac,.m4a,.flac,.ogg,.webm,audio/*"
+                hidden
             >
 
-                <input
-                    id="audio-input"
-                    name="audio"
-                    type="file"
-                    accept=".wav,.mp3,.aac,.m4a,.flac,.ogg,.webm,audio/*"
-                    hidden
-                >
-
-
-                <label
-                    for="audio-input"
-                    class="upload-zone"
-                    id="upload-zone"
-                >
-
-                    <div class="upload-icon">
-                        +
+            <label for="audio-input" class="upload-zone" id="upload-zone">
+                <div class="upload-zone-inner">
+                    <div class="upload-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 16V4"/>
+                            <path d="m7 9 5-5 5 5"/>
+                            <path d="M5 20h14"/>
+                        </svg>
                     </div>
 
-                    <div class="upload-title">
-                        Upload audio
-                    </div>
-
+                    <div class="upload-title">Drop audio here</div>
                     <div class="upload-subtitle">
-                        WAV, MP3, AAC, M4A, FLAC, OGG or WEBM
+                        WAV · MP3 · AAC · M4A · FLAC · OGG · WEBM
                     </div>
 
-                </label>
+                    <span class="browse-button">Browse files</span>
+                </div>
+            </label>
 
-
-                <div
-                    class="selected-file"
-                    id="selected-file"
-                    hidden
-                >
-
+            <div class="selected-file" id="selected-file" hidden>
+                <div class="selected-file-left">
+                    <span class="file-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18V5l12-2v13"/>
+                            <circle cx="6" cy="18" r="3"/>
+                            <circle cx="18" cy="16" r="3"/>
+                        </svg>
+                    </span>
                     <span id="file-name"></span>
-
-                    <button
-                        type="button"
-                        id="remove-file"
-                        aria-label="Remove file"
-                    >
-                        ×
-                    </button>
-
                 </div>
 
-
-                <button
-                    type="submit"
-                    class="analyze-button"
-                    id="analyze-button"
-                    disabled
-                >
-                    Analyze audio
+                <button type="button" id="remove-file" class="remove-file" aria-label="Remove file">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round">
+                        <path d="M18 6 6 18"/>
+                        <path d="m6 6 12 12"/>
+                    </svg>
                 </button>
+            </div>
 
-            </form>
+            <button type="submit" class="analyze-button" id="analyze-button" disabled>
+                <span>Analyze audio</span>
+                <svg class="analyze-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/>
+                    <path d="m13 6 6 6-6 6"/>
+                </svg>
+            </button>
+        </form>
+    </section>
 
-        </section>
+    <!-- Processing -->
+    <section class="processing" id="processing" hidden>
+        <div class="processing-progress">
+            <span></span>
+        </div>
 
+        <div class="processing-content">
+            <div class="processing-orb" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
 
-        <!-- ==============================================================
-             Processing
-             ============================================================== -->
+            <div class="processing-copy">
+                <div class="processing-title-row">
+                    <p class="processing-title" id="processing-title">Analyzing audio</p>
+                    <span class="processing-live">RUNNING</span>
+                </div>
 
-        <section
-            class="processing"
-            id="processing"
-            hidden
-        >
+                <p class="processing-subtitle" id="processing-subtitle">
+                    Speaker identification · Transcription · Alignment
+                </p>
 
-            <div class="loader"></div>
+                <div class="processing-steps" aria-hidden="true">
+                    <span class="processing-step active">Speaker identification</span>
+                    <span class="step-dot"></span>
+                    <span class="processing-step">Transcription</span>
+                    <span class="step-dot"></span>
+                    <span class="processing-step">Alignment</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            <p class="processing-title">
-                Analyzing audio
-            </p>
-
-            <p class="processing-subtitle">
-                Speaker identification, transcription and alignment
-                are running.
-            </p>
-
-        </section>
-
-
-        <!-- ==============================================================
-             Error
-             ============================================================== -->
-
-        <section
-            class="error-panel"
-            id="error-panel"
-            hidden
-        >
-
-            <p class="error-label">
-                ANALYSIS ERROR
-            </p>
-
+    <!-- Error -->
+    <section class="error-panel" id="error-panel" hidden>
+        <div class="error-indicator"></div>
+        <div class="error-content">
+            <p class="error-label">ANALYSIS ERROR</p>
             <p id="error-message"></p>
+        </div>
+    </section>
 
-        </section>
+    <!-- Results -->
+    <section class="results" id="results" hidden>
 
+        <div class="results-header">
+            <div class="results-heading">
+                <span class="result-badge">RESULT</span>
+                <p class="eyebrow">ANALYSIS RESULT</p>
+                <h2>Speaker transcript</h2>
+            </div>
 
-        <!-- ==============================================================
-             Results
-             ============================================================== -->
+            <button type="button" class="reset-button" id="reset-button">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 3-6.7"/>
+                    <path d="M3 4v6h6"/>
+                </svg>
+                <span>New analysis</span>
+            </button>
+        </div>
 
-        <section
-            class="results"
-            id="results"
-            hidden
-        >
-
-            <!-- ----------------------------------------------------------
-                 Result header
-                 ---------------------------------------------------------- -->
-
-            <div class="results-header">
-
+        <!-- Playback -->
+        <div class="result-card playback-card" id="audio-player">
+            <div class="card-header">
                 <div>
-
-                    <p class="eyebrow">
-                        ANALYSIS RESULT
-                    </p>
-
-                    <h2>
-                        Speaker transcript
-                    </h2>
-
+                    <p class="panel-label">PLAYBACK</p>
+                    <p class="audio-file-name" id="audio-file-name"></p>
                 </div>
-
-
-                <button
-                    type="button"
-                    class="reset-button"
-                    id="reset-button"
-                >
-                    New analysis
-                </button>
-
+                <span class="card-hint">Source audio</span>
             </div>
 
+            <audio id="audio" controls preload="metadata"></audio>
+        </div>
 
-            <!-- ----------------------------------------------------------
-                 Audio player
-                 ---------------------------------------------------------- -->
-
-            <div
-                class="audio-player"
-                id="audio-player"
-            >
-
-                <div class="audio-player-header">
-
-                    <div>
-
-                        <p class="panel-label">
-                            AUDIO
-                        </p>
-
-                        <p
-                            class="audio-file-name"
-                            id="audio-file-name"
-                        >
-                        </p>
-
-                    </div>
-
+        <!-- Speakers -->
+        <div class="result-card speakers-card">
+            <div class="card-header">
+                <div>
+                    <p class="panel-label">SPEAKERS</p>
+                    <p class="card-title">Detected voices</p>
                 </div>
-
-
-                <audio
-                    id="audio"
-                    controls
-                    preload="metadata"
-                >
-                </audio>
-
+                <span class="card-hint">Filter transcript</span>
             </div>
 
+            <div class="speaker-list" id="speaker-list" role="list" aria-label="Speakers"></div>
+        </div>
 
-            <!-- ----------------------------------------------------------
-                 Speakers
-                 ---------------------------------------------------------- -->
-
-            <div class="speaker-section">
-
-                <div class="speaker-section-header">
-
-                    <p class="panel-label">
-                        SPEAKERS
-                    </p>
-
+        <!-- Transcript -->
+        <div class="result-card transcript-card">
+            <div class="transcript-header">
+                <div>
+                    <p class="panel-label">TRANSCRIPT</p>
+                    <p class="card-title">Timestamped conversation</p>
                 </div>
-
-
-                <div
-                    class="speaker-list"
-                    id="speaker-list"
-                    role="list"
-                    aria-label="Speakers"
-                ></div>
-
+                <span class="transcript-hint">Click a row to seek audio</span>
             </div>
 
+            <div class="transcript" id="transcript"></div>
+        </div>
 
-            <!-- ----------------------------------------------------------
-                 Transcript
-                 ---------------------------------------------------------- -->
+    </section>
+</main>
 
-            <div class="transcript-panel">
-
-                <div class="panel-heading">
-
-                    <span>
-                        TRANSCRIPT
-                    </span>
-
-                    <span class="transcript-hint">
-                        Select a segment to jump to its timestamp
-                    </span>
-
-                </div>
-
-
-                <div
-                    class="transcript"
-                    id="transcript"
-                ></div>
-
-            </div>
-
-        </section>
-
-
-    </main>
-
-
-    <script
-        src="{{ url_for('static', filename='js/app.js') }}"
-    ></script>
-
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

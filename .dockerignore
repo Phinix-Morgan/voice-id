@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environment
+.venv/
+
+# Environment / secrets
+.env
+.envrc
+
+# Evaluation and uploaded audio
+data/evaluation/
+
+# Original known-speaker recordings
+data/processed/known/*/*.wav
+
+# Local model cache
+pretrained_models/
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation / local artifacts
+*.log

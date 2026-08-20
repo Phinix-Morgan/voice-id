@@ -190,9 +190,7 @@ def load_profiles() -> dict[str, torch.Tensor]:
     )
 
     if not root.exists():
-        raise FileNotFoundError(
-            f"Known directory not found: {root}"
-        )
+        return {}
 
     profiles: dict[
         str,
@@ -260,10 +258,7 @@ def load_profiles() -> dict[str, torch.Tensor]:
             speaker_dir.name
         ] = profile
 
-    if not profiles:
-        raise RuntimeError(
-            "No known speaker profiles found."
-        )
+
 
     return profiles
 
@@ -296,6 +291,13 @@ def get_best_known_match(
         embedding,
         profiles,
     )
+
+    if not scores:
+        return (
+            None,
+            None,
+            {},
+        )
 
     speaker = max(
         scores,
@@ -751,8 +753,8 @@ def assign_initial_identities(
         # ----------------------------------------------------
 
         if (
-            known_score
-            >= KNOWN_THRESHOLD
+            known_score is not None
+            and known_score >= KNOWN_THRESHOLD
         ):
 
             segment[
@@ -811,10 +813,11 @@ def assign_initial_identities(
         # ----------------------------------------------------
 
         if (
-            duration
-            >= MIN_UNKNOWN_SEGMENT_DURATION
-            and known_score
-            < NEW_UNKNOWN_MIN_KNOWN_SCORE
+            duration >= MIN_UNKNOWN_SEGMENT_DURATION
+            and (
+                known_score is None
+                or known_score < NEW_UNKNOWN_MIN_KNOWN_SCORE
+            )
         ):
 
             (

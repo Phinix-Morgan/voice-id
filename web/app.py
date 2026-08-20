@@ -7,6 +7,7 @@ from pathlib import Path
 from flask import Flask, jsonify, render_template, request
 from werkzeug.utils import secure_filename
 
+import os
 
 # ---------------------------------------------------------------------------
 # Project paths

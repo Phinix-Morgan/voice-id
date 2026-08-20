@@ -21,8 +21,8 @@ __pycache__/
 # Evaluation and uploaded audio
 data/evaluation/
 
-# Original known-speaker recordings
-data/processed/known/*/*.wav
+# Local known-speaker data
+data/processed/known/
 
 # Local model cache
 pretrained_models/

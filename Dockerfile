@@ -84,8 +84,6 @@ RUN uv pip install \
 COPY src ./src
 COPY web ./web
 
-COPY data/processed/known ./data/processed/known
-
 
 # --------------------------------------------------------------------------
 # Install Voice ID itself

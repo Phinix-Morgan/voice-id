@@ -37,6 +37,422 @@ let processingStepIndex = 0;
 
 
 /* ==========================================================================
+   Live microphone recorder
+   ========================================================================== */
+
+const uploadTab = document.getElementById("upload-tab");
+const recordTab = document.getElementById("record-tab");
+const uploadPanel = document.getElementById("upload-panel");
+const recordPanel = document.getElementById("record-panel");
+
+const recorder = document.getElementById("recorder");
+const recordButton = document.getElementById("record-button");
+const clearRecordingButton = document.getElementById("clear-recording");
+const recorderStatusText = document.getElementById("recorder-status-text");
+const recorderAction = document.getElementById("recorder-action");
+const recorderHint = document.getElementById("recorder-hint");
+const recordingTime = document.getElementById("recording-time");
+const recordingWaveform = document.getElementById("recording-waveform");
+const recordingPreview = document.getElementById("recording-preview");
+const recordingPreviewAudio = document.getElementById("recording-preview-audio");
+const recordingFileName = document.getElementById("recording-file-name");
+
+let activeSource = "upload";
+let mediaRecorder = null;
+let mediaStream = null;
+let audioContext = null;
+let analyser = null;
+let animationFrame = null;
+let recordingStartedAt = null;
+let recordingTimer = null;
+let recordingChunks = [];
+let recordingObjectURL = null;
+
+uploadTab?.addEventListener("click", () => switchSource("upload"));
+recordTab?.addEventListener("click", () => switchSource("record"));
+
+function switchSource(source) {
+    if (activeSource === source) return;
+
+    if (isRecording()) stopRecording();
+
+    activeSource = source;
+    const isUpload = source === "upload";
+
+    uploadTab?.classList.toggle("active", isUpload);
+    recordTab?.classList.toggle("active", !isUpload);
+    uploadTab?.setAttribute("aria-selected", String(isUpload));
+    recordTab?.setAttribute("aria-selected", String(!isUpload));
+
+    if (uploadPanel) {
+        uploadPanel.hidden = !isUpload;
+        uploadPanel.classList.toggle("active", isUpload);
+    }
+
+    if (recordPanel) {
+        recordPanel.hidden = isUpload;
+        recordPanel.classList.toggle("active", !isUpload);
+    }
+
+    hideError();
+}
+
+function isRecording() {
+    return mediaRecorder?.state === "recording";
+}
+
+recordButton?.addEventListener("click", async () => {
+    if (isRecording()) {
+        stopRecording();
+    } else {
+        await startRecording();
+    }
+});
+
+async function startRecording() {
+    if (
+        !navigator.mediaDevices?.getUserMedia ||
+        typeof MediaRecorder === "undefined"
+    ) {
+        showError(
+            "Live recording is not supported by this browser. "
+            + "Please upload an audio file instead."
+        );
+        return;
+    }
+
+    try {
+        hideError();
+
+        if (selectedAudio) clearSelectedFile();
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                channelCount: 1,
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+            },
+        });
+
+        mediaStream = stream;
+
+        const mimeType = getSupportedRecordingMimeType();
+
+        mediaRecorder = mimeType
+            ? new MediaRecorder(stream, { mimeType })
+            : new MediaRecorder(stream);
+
+        recordingChunks = [];
+
+        mediaRecorder.addEventListener("dataavailable", (event) => {
+            if (event.data?.size > 0) recordingChunks.push(event.data);
+        });
+
+        mediaRecorder.addEventListener("stop", finishRecording, { once: true });
+        mediaRecorder.start(100);
+
+        startLiveMeter(stream);
+        startRecordingClock();
+
+        recorder?.classList.add("is-recording");
+        analyzeButton.disabled = true;
+
+        if (recordingPreview) recordingPreview.hidden = true;
+        if (clearRecordingButton) clearRecordingButton.hidden = true;
+
+        recorderStatusText.textContent = "Recording";
+        recorderAction.textContent = "Stop recording";
+        recorderHint.textContent =
+            "Speak naturally. The waveform follows your voice.";
+
+        recordButton?.setAttribute("aria-label", "Stop recording");
+    } catch (error) {
+        console.error("Microphone access failed:", error);
+        stopMicrophoneStream();
+
+        if (error?.name === "NotAllowedError") {
+            showError(
+                "Microphone access was denied. Allow microphone access "
+                + "in your browser and try again."
+            );
+        } else {
+            showError(
+                "Unable to access the microphone. "
+                + "Please check your browser permissions."
+            );
+        }
+    }
+}
+
+function getSupportedRecordingMimeType() {
+    const candidates = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+        "audio/ogg",
+    ];
+
+    return candidates.find((type) => MediaRecorder.isTypeSupported(type)) || "";
+}
+
+function stopRecording() {
+    if (!isRecording()) return;
+
+    mediaRecorder.stop();
+    stopRecordingClock();
+    stopLiveMeter();
+
+    recorder?.classList.remove("is-recording");
+    recorderStatusText.textContent = "Processing recording";
+    recorderAction.textContent = "Saving recording";
+    recorderHint.textContent = "Preparing your audio for analysis.";
+    recordButton?.setAttribute("aria-label", "Start recording");
+}
+
+function finishRecording() {
+    const mimeType = mediaRecorder?.mimeType || "audio/webm";
+    const blob = new Blob(recordingChunks, { type: mimeType });
+
+    stopMicrophoneStream();
+    recordingChunks = [];
+
+    if (!blob.size) {
+        resetRecorderVisuals();
+        showError("No audio was captured. Please try recording again.");
+        return;
+    }
+
+    const extension = getAudioExtension(mimeType);
+    const filename =
+        `voice-id-recording-${new Date().toISOString().replace(/[:.]/g, "-")}.${extension}`;
+
+    selectedAudio = new File([blob], filename, {
+        type: mimeType,
+        lastModified: Date.now(),
+    });
+
+    fileName.textContent = filename;
+    selectedFile.hidden = false;
+
+    if (recordingObjectURL) URL.revokeObjectURL(recordingObjectURL);
+    recordingObjectURL = URL.createObjectURL(blob);
+
+    if (recordingPreviewAudio) recordingPreviewAudio.src = recordingObjectURL;
+    if (recordingFileName) recordingFileName.textContent = filename;
+    if (recordingPreview) recordingPreview.hidden = false;
+    if (clearRecordingButton) clearRecordingButton.hidden = false;
+
+    recorderStatusText.textContent = "Recording ready";
+    recorderAction.textContent = "Ready to analyze";
+    recorderHint.textContent = "Review the recording or record again.";
+
+    analyzeButton.disabled = false;
+    recorder?.classList.remove("is-recording");
+}
+
+function getAudioExtension(mimeType) {
+    if (mimeType.includes("mp4")) return "m4a";
+    if (mimeType.includes("ogg")) return "ogg";
+    return "webm";
+}
+
+function startLiveMeter(stream) {
+    stopLiveMeter();
+
+    try {
+        audioContext = new (
+            window.AudioContext || window.webkitAudioContext
+        )();
+
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.82;
+
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        drawWaveform();
+    } catch (error) {
+        console.warn("Live waveform unavailable:", error);
+        drawIdleWaveform();
+    }
+}
+
+function drawWaveform() {
+    if (!analyser || !recordingWaveform) return;
+
+    const canvas = recordingWaveform;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.floor(rect.width * dpr));
+    const height = Math.max(1, Math.floor(rect.height * dpr));
+
+    if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+    }
+
+    const context = canvas.getContext("2d");
+    const data = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(data);
+
+    context.clearRect(0, 0, width, height);
+    context.beginPath();
+    context.lineWidth = Math.max(1, dpr * 1.15);
+    context.strokeStyle = "#050505";
+    context.lineCap = "round";
+    context.lineJoin = "round";
+
+    const center = height / 2;
+    const amplitude = height * 0.36;
+
+    for (let i = 0; i < data.length; i += 2) {
+        const x = (i / (data.length - 1)) * width;
+        const y = center + ((data[i] - 128) / 128) * amplitude;
+
+        if (i === 0) context.moveTo(x, y);
+        else context.lineTo(x, y);
+    }
+
+    context.stroke();
+    animationFrame = requestAnimationFrame(drawWaveform);
+}
+
+function drawIdleWaveform() {
+    if (!recordingWaveform) return;
+
+    const canvas = recordingWaveform;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+
+    const context = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+    const center = height / 2;
+
+    context.clearRect(0, 0, width, height);
+    context.beginPath();
+    context.lineWidth = Math.max(1, dpr);
+    context.strokeStyle = "#d1d1d1";
+
+    for (let x = 0; x <= width; x += Math.max(4, dpr * 4)) {
+        const y = center
+            + Math.sin((x / Math.max(1, width)) * Math.PI * 10) * dpr * 1.8;
+
+        if (x === 0) context.moveTo(x, y);
+        else context.lineTo(x, y);
+    }
+
+    context.stroke();
+}
+
+function stopLiveMeter() {
+    if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+    }
+
+    if (audioContext) {
+        audioContext.close().catch(() => {});
+        audioContext = null;
+    }
+
+    analyser = null;
+}
+
+window.addEventListener("resize", () => {
+    if (!isRecording()) drawIdleWaveform();
+});
+
+function startRecordingClock() {
+    recordingStartedAt = performance.now();
+    updateRecordingClock();
+    clearInterval(recordingTimer);
+    recordingTimer = setInterval(updateRecordingClock, 100);
+}
+
+function updateRecordingClock() {
+    if (recordingStartedAt === null) return;
+
+    const elapsed = (performance.now() - recordingStartedAt) / 1000;
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = Math.floor(elapsed % 60);
+
+    if (recordingTime) {
+        recordingTime.textContent =
+            `${String(minutes).padStart(2, "0")}:` +
+            `${String(seconds).padStart(2, "0")}`;
+    }
+}
+
+function stopRecordingClock() {
+    clearInterval(recordingTimer);
+    recordingTimer = null;
+    recordingStartedAt = null;
+}
+
+function clearRecording() {
+    if (isRecording()) stopRecording();
+
+    stopMicrophoneStream();
+    stopLiveMeter();
+    stopRecordingClock();
+
+    mediaRecorder = null;
+    recordingChunks = [];
+
+    if (recordingObjectURL) {
+        URL.revokeObjectURL(recordingObjectURL);
+        recordingObjectURL = null;
+    }
+
+    selectedAudio = null;
+    audioInput.value = "";
+    selectedFile.hidden = true;
+    fileName.textContent = "";
+
+    if (recordingPreviewAudio) {
+        recordingPreviewAudio.pause();
+        recordingPreviewAudio.removeAttribute("src");
+        recordingPreviewAudio.load();
+    }
+
+    if (recordingPreview) recordingPreview.hidden = true;
+    if (clearRecordingButton) clearRecordingButton.hidden = true;
+
+    resetRecorderVisuals();
+    analyzeButton.disabled = true;
+}
+
+clearRecordingButton?.addEventListener("click", clearRecording);
+
+function stopMicrophoneStream() {
+    if (!mediaStream) return;
+    mediaStream.getTracks().forEach((track) => track.stop());
+    mediaStream = null;
+}
+
+function resetRecorderVisuals() {
+    recorder?.classList.remove("is-recording");
+    recorderStatusText.textContent = "Ready to record";
+    recorderAction.textContent = "Start recording";
+    recorderHint.textContent = "Allow microphone access to begin.";
+    recordButton?.setAttribute("aria-label", "Start recording");
+
+    if (recordingTime) recordingTime.textContent = "00:00";
+
+    drawIdleWaveform();
+}
+
+drawIdleWaveform();
+
+
+/* ==========================================================================
    File selection
    ========================================================================== */
 
@@ -128,6 +544,17 @@ function clearSelectedFile() {
 
     selectedFile.hidden = true;
     fileName.textContent = "";
+
+    if (activeSource === "record") {
+        if (recordingPreviewAudio) {
+            recordingPreviewAudio.pause();
+            recordingPreviewAudio.removeAttribute("src");
+            recordingPreviewAudio.load();
+        }
+
+        if (recordingPreview) recordingPreview.hidden = true;
+        if (clearRecordingButton) clearRecordingButton.hidden = true;
+    }
 
     analyzeButton.disabled = true;
 }
@@ -325,7 +752,12 @@ function hideError() {
 function renderResults(result) {
     hideError();
 
-    if (selectedAudio) {
+    if (
+        selectedAudio &&
+        audioElement &&
+        audioFileName &&
+        audioPlayer
+    ) {
         revokeAudioObjectURL();
 
         audioObjectURL = URL.createObjectURL(selectedAudio);
@@ -588,7 +1020,7 @@ function seekAudio(seconds) {
 }
 
 
-audioElement.addEventListener("timeupdate", () => {
+audioElement?.addEventListener("timeupdate", () => {
     const currentTime = audioElement.currentTime;
 
     const segments =
@@ -659,10 +1091,12 @@ function formatTime(seconds) {
    ========================================================================== */
 
 resetButton.addEventListener("click", () => {
-    audioElement.pause();
+    clearRecording();
 
-    audioElement.removeAttribute("src");
-    audioElement.load();
+    audioElement?.pause();
+
+    audioElement?.removeAttribute("src");
+    audioElement?.load();
 
     revokeAudioObjectURL();
 

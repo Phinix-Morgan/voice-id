@@ -1212,3 +1212,415 @@ button:disabled {
         transition-duration: .01ms !important;
     }
 }
+
+
+/* ==========================================================================
+   Live microphone recorder
+   ========================================================================== */
+
+.source-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 14px 14px 0;
+    padding: 4px;
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    background: var(--gray-50);
+}
+
+.source-tab {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
+        box-shadow var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+
+.source-tab:hover { color: var(--black); }
+
+.source-tab.active {
+    background: var(--white);
+    color: var(--black);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .055);
+}
+
+.source-tab:active { transform: scale(.985); }
+
+.source-tab-icon {
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.source-tab-mic {
+    position: relative;
+    width: 12px;
+    height: 16px;
+    border: 1.5px solid currentColor;
+    border-radius: 8px;
+}
+
+.source-tab-mic::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    width: 8px;
+    height: 6px;
+    border: 1.5px solid currentColor;
+    border-top: 0;
+    border-radius: 0 0 7px 7px;
+    transform: translateX(-50%);
+}
+
+.source-tab-mic::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 1.5px;
+    height: 4px;
+    background: currentColor;
+    transform: translateX(-50%);
+}
+
+.source-panel { animation: source-panel-in .35s var(--ease) both; }
+.source-panel[hidden] { display: none !important; }
+
+.recorder {
+    position: relative;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 34px 38px 30px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 48%, rgba(0, 0, 0, .028), transparent 34%),
+        var(--white);
+}
+
+.recorder::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px dashed var(--gray-200);
+    border-radius: var(--radius-md);
+    pointer-events: none;
+    transition: inset var(--normal) var(--ease), border-color var(--normal) var(--ease);
+}
+
+.recorder.is-recording::before {
+    inset: 13px;
+    border-color: var(--gray-300);
+}
+
+.recorder-topline,
+.recorder-controls,
+.recording-preview {
+    position: relative;
+    z-index: 2;
+}
+
+.recorder-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.recorder-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--gray-500);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+}
+
+.recording-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gray-300);
+    transition: background var(--normal) var(--ease), transform var(--normal) var(--ease);
+}
+
+.recorder.is-recording .recording-dot {
+    background: var(--black);
+    transform: scale(1.15);
+    animation: recording-dot-pulse 1s ease-in-out infinite;
+}
+
+.recording-time {
+    min-width: 58px;
+    color: var(--black);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.waveform-shell {
+    position: relative;
+    height: 178px;
+    margin: 16px 0;
+    overflow: hidden;
+    border-radius: 18px;
+}
+
+.waveform-glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 52%;
+    height: 46%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .035);
+    filter: blur(28px);
+    opacity: .4;
+    transform: translate(-50%, -50%) scale(.7);
+    transition: opacity var(--normal) var(--ease), transform var(--normal) var(--ease);
+}
+
+.recorder.is-recording .waveform-glow {
+    opacity: .85;
+    transform: translate(-50%, -50%) scale(1);
+    animation: waveform-glow 2.4s ease-in-out infinite;
+}
+
+.recording-waveform {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.waveform-centerline {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 50%;
+    height: 1px;
+    background: var(--gray-150);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.recorder-controls {
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+}
+
+.record-button {
+    position: relative;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--gray-200);
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .055);
+    transition: transform var(--normal) var(--ease), border-color var(--normal) var(--ease),
+        box-shadow var(--normal) var(--ease);
+}
+
+.record-button:hover {
+    transform: translateY(-2px);
+    border-color: var(--gray-300);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .09);
+}
+
+.record-button:active { transform: scale(.95); }
+
+.record-button-core {
+    position: relative;
+    z-index: 2;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: var(--black);
+    transition: width var(--normal) var(--ease), height var(--normal) var(--ease),
+        border-radius var(--normal) var(--ease);
+}
+
+.record-button-ring {
+    position: absolute;
+    inset: -7px;
+    border: 1px solid var(--gray-200);
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(.75);
+}
+
+.recorder.is-recording .record-button { border-color: var(--black); }
+
+.recorder.is-recording .record-button-core {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+}
+
+.recorder.is-recording .record-button-ring {
+    opacity: 1;
+    transform: scale(1);
+    animation: record-ring-pulse 1.35s ease-out infinite;
+}
+
+.recorder-copy {
+    min-width: 145px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.recorder-copy strong {
+    color: var(--black);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.recorder-copy span {
+    color: var(--gray-400);
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.secondary-recorder-button {
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--white);
+    color: var(--gray-600);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease),
+        background var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+
+.secondary-recorder-button:hover {
+    color: var(--black);
+    border-color: var(--border-strong);
+    background: var(--gray-50);
+    transform: translateY(-1px);
+}
+
+.recording-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 18px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--gray-50);
+    animation: file-in .35s var(--ease) both;
+}
+
+.preview-meta {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.preview-icon {
+    width: 31px;
+    height: 31px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: var(--white);
+    color: var(--gray-600);
+}
+
+.preview-meta > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.preview-meta strong {
+    color: var(--black);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.preview-meta span {
+    overflow: hidden;
+    color: var(--gray-400);
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recording-preview audio {
+    width: min(260px, 42%);
+    height: 34px;
+}
+
+@keyframes source-panel-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes recording-dot-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, .10); }
+    50% { box-shadow: 0 0 0 5px rgba(0, 0, 0, .025); }
+}
+
+@keyframes record-ring-pulse {
+    0% { opacity: .8; transform: scale(.82); }
+    70%, 100% { opacity: 0; transform: scale(1.18); }
+}
+
+@keyframes waveform-glow {
+    0%, 100% { transform: translate(-50%, -50%) scale(.88); }
+    50% { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@media (max-width: 760px) {
+    .recorder { min-height: 330px; padding: 28px 24px 24px; }
+    .waveform-shell { height: 155px; }
+    .recording-preview { align-items: stretch; flex-direction: column; }
+    .recording-preview audio { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .source-switch { margin-left: 10px; margin-right: 10px; }
+    .recorder { min-height: 315px; padding: 25px 18px 20px; }
+    .recorder::before { inset: 12px; }
+    .waveform-shell { height: 135px; }
+    .recorder-controls { gap: 12px; }
+    .recorder-copy { min-width: 0; flex: 1; }
+    .secondary-recorder-button { padding: 0 9px; }
+}

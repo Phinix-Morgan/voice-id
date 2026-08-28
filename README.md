@@ -2,6 +2,8 @@
 
 > Understand who said what.
 
+> **Live Demo:** [Try Voice ID →](https://voice-id-193447150189.asia-south1.run.app)
+
 Voice ID is a speaker-intelligence application that analyzes an audio recording, identifies registered speakers, discovers previously unknown speakers, generates a timestamped transcription, and aligns the transcript with the detected speakers.
 
 It combines speaker diarization, ECAPA-TDNN speaker embeddings, speaker-profile matching, unknown-speaker clustering, Gemini transcription, and timestamp alignment into a single processing pipeline.
@@ -487,7 +489,7 @@ if you choose to provide one.
 ## 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Phinix-Morgan/voice-id.git
 cd voice-id
 ```
 
@@ -946,11 +948,14 @@ Additional observations can update the corresponding unknown speaker profile.
 
 # Screenshots
 
-> Screenshot paths below are placeholders. Add the actual images to these paths before committing this section.
 
 ## Landing / Upload
 
 ![Voice ID Upload Interface](docs/screenshots/upload.png)
+
+### Live Recording
+
+![Voice ID Recording Interface](docs/screenshots/record.png)
 
 ## Analysis
 
@@ -959,6 +964,10 @@ Additional observations can update the corresponding unknown speaker profile.
 ## Speaker Transcript
 
 ![Voice ID Speaker Transcript](docs/screenshots/transcript.png)
+
+### Speaker Transcript — Alternate View
+
+![Voice ID Transcript](docs/screenshots/transcript-x.png)
 
 ---
 

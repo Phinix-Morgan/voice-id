@@ -6,6 +6,8 @@ FROM python:3.12-slim
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        curl \
+        unzip \
         ffmpeg \
         libsndfile1 \
         libgomp1 \
@@ -66,8 +68,8 @@ COPY pyproject.toml README.md ./
 
 RUN uv pip install \
         --python /app/.venv/bin/python \
+        "faster-whisper>=1.2.1" \
         "flask>=3.1.3" \
-        "google-genai>=2.18.1" \
         "matplotlib>=3.11.1" \
         "numpy>=2.5.2" \
         "python-dotenv>=1.2.3" \

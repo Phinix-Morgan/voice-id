@@ -30,9 +30,7 @@ if str(SRC_DIR) not in sys.path:
 
 from voice_id.audio import normalize_audio  # noqa: E402
 from voice_id.pipeline import process_audio  # noqa: E402
-from voice_id.transcription import (  # noqa: E402
-    GeminiUnavailableError,
-)
+from voice_id.transcription import VoskUnavailableError
 
 
 # ---------------------------------------------------------------------------
@@ -168,10 +166,10 @@ def analyze_audio():
             }
         )
 
-    except GeminiUnavailableError:
+    except VoskUnavailableError:
 
         app.logger.warning(
-            "Gemini transcription service is temporarily unavailable."
+            "Vosk transcription service is temporarily unavailable."
         )
 
         return error_response(

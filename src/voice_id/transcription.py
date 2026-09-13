@@ -1,169 +1,98 @@
 from __future__ import annotations
 
-import json
-import os
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
-from google import genai
-from google.genai import errors
-from google.genai import types
+from faster_whisper import WhisperModel
 
 
-MODEL_NAME = "gemini-3.5-flash"
+MODEL_SIZE = "small"
 
 
-class GeminiUnavailableError(RuntimeError):
-    """Raised when Gemini is temporarily unavailable."""
+class VoskUnavailableError(RuntimeError):
+    """Raised when the local ASR model is unavailable or fails to load.
+
+    Kept under the original Vosk name so the app's existing
+    error handler (which returns HTTP 503 for this) keeps
+    working unchanged.
+    """
 
     pass
 
 
-def load_client() -> genai.Client:
-    load_dotenv()
+def load_client() -> WhisperModel:
 
-    api_key = os.getenv("GEMINI_API_KEY")
+    print("Loading Whisper model...")
 
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY is not set. "
-            "Add it to your .env file."
+    try:
+        model = WhisperModel(
+            MODEL_SIZE,
+            device="cpu",
+            compute_type="int8",
         )
 
-    return genai.Client(
-        api_key=api_key
-    )
+    except Exception as exc:
+        raise VoskUnavailableError(
+            "Local ASR model failed to load. "
+            "Please try the transcription again."
+        ) from exc
+
+    print("Whisper model loaded successfully.")
+
+    return model
 
 
 def upload_audio(
-    client: genai.Client,
+    model: WhisperModel,
     audio_path: Path,
-):
+) -> Path:
+
     if not audio_path.exists():
         raise FileNotFoundError(
             f"Audio file not found: {audio_path}"
         )
 
-    print("Uploading audio to Gemini...")
+    print("Audio ready.")
 
-    audio_file = client.files.upload(
-        file=str(audio_path),
-    )
-
-    print("Audio uploaded successfully.")
-
-    return audio_file
+    return audio_path
 
 
 def transcribe_audio(
-    client: genai.Client,
-    audio_file,
+    model: WhisperModel,
+    audio_file: Path,
 ) -> dict:
 
-    prompt = """
-Transcribe this audio accurately.
+    segments_iter, info = model.transcribe(
+        str(audio_file),
+        vad_filter=True,
+        beam_size=5,
+    )
 
-Return ONLY valid JSON.
+    segments = []
 
-Use exactly this structure:
+    for segment in segments_iter:
 
-{
-  "language": "detected language",
-  "segments": [
-    {
-      "start": 0.0,
-      "end": 0.0,
-      "text": "spoken text"
+        text = segment.text.strip()
+
+        if not text:
+            continue
+
+        segments.append(
+            {
+                "start": float(
+                    segment.start
+                ),
+                "end": float(
+                    segment.end
+                ),
+                "text": text,
+            }
+        )
+
+    return {
+        "language": info.language,
+        "segments": segments,
     }
-  ]
-}
-
-Rules:
-
-1. Transcribe only speech that is actually present in the audio.
-2. Do not invent or infer missing words.
-3. Preserve the spoken wording as accurately as possible.
-4. Use seconds for timestamps.
-5. Each segment must contain a start and end timestamp.
-6. Keep timestamps in chronological order.
-7. Do not assign speaker names.
-8. Do not add explanations outside the JSON.
-"""
-
-    try:
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=[
-                audio_file,
-                prompt,
-            ],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-            ),
-        )
-
-    except errors.ServerError as exc:
-        if exc.code == 503:
-            raise GeminiUnavailableError(
-                "Gemini is temporarily unavailable. "
-                "Please try the analysis again."
-            ) from exc
-
-        raise RuntimeError(
-            f"Gemini server error: {exc}"
-        ) from exc
-
-    except errors.APIError as exc:
-        raise RuntimeError(
-            f"Gemini API error: {exc}"
-        ) from exc
-
-    if not response.text:
-        raise RuntimeError(
-            "Gemini returned an empty transcription response."
-        )
-
-    response_text = response.text.strip()
-
-    try:
-        result = json.loads(response_text)
-
-    except json.JSONDecodeError:
-
-        if response_text.startswith("```"):
-            lines = response_text.splitlines()
-
-            if (
-                len(lines) >= 3
-                and lines[0].startswith("```")
-                and lines[-1].strip() == "```"
-            ):
-                response_text = "\n".join(
-                    lines[1:-1]
-                ).strip()
-
-                try:
-                    result = json.loads(
-                        response_text
-                    )
-
-                except json.JSONDecodeError as exc:
-                    raise RuntimeError(
-                        "Gemini returned malformed JSON."
-                    ) from exc
-
-            else:
-                raise RuntimeError(
-                    "Gemini returned malformed JSON."
-                )
-
-        else:
-            raise RuntimeError(
-                "Gemini returned malformed JSON."
-            )
-
-    return result
 
 
 def validate_transcript(
@@ -324,7 +253,7 @@ def main() -> None:
     print("=" * 70)
 
     print(
-        f"Model: {MODEL_NAME}"
+        f"Model: whisper-{MODEL_SIZE}"
     )
 
     print(
@@ -359,7 +288,7 @@ def main() -> None:
         print("DONE")
         print("=" * 70)
 
-    except GeminiUnavailableError as exc:
+    except VoskUnavailableError as exc:
         print()
         print("=" * 70)
         print("TRANSCRIPTION UNAVAILABLE")

@@ -592,6 +592,7 @@ uploadForm.addEventListener("submit", async (event) => {
         }
 
         if (response.ok && data && data.success === true) {
+            analysisId = data.analysis_id || null;
             analysisResult = data.result;
             renderResults(analysisResult);
             return;
@@ -769,6 +770,9 @@ function renderResults(result) {
 
     renderSpeakers(getSpeakers(result));
     renderTranscript(getTranscript(result));
+
+    resetNotesState();
+    switchResultsTab("transcript");
 
     results.hidden = false;
 
@@ -1101,6 +1105,9 @@ resetButton.addEventListener("click", () => {
     revokeAudioObjectURL();
 
     analysisResult = null;
+    analysisId = null;
+    notesData = null;
+    notesRequestToken += 1;
     activeSpeaker = null;
     activeSegment = null;
     lastAutoScrolledSegment = null;
@@ -1135,3 +1142,502 @@ processing.hidden = true;
 results.hidden = true;
 errorPanel.hidden = true;
 audioPlayer.hidden = false;
+
+
+/* ==========================================================================
+   Result view tabs (Transcript / Notes)
+   ========================================================================== */
+
+const transcriptTab = document.getElementById("transcript-tab");
+const notesTab = document.getElementById("notes-tab");
+const transcriptCard = document.getElementById("transcript-card");
+const notesPanel = document.getElementById("notes-panel");
+
+
+function switchResultsTab(tab) {
+    const isTranscript = tab === "transcript";
+
+    transcriptTab?.classList.toggle("active", isTranscript);
+    notesTab?.classList.toggle("active", !isTranscript);
+
+    transcriptTab?.setAttribute("aria-selected", String(isTranscript));
+    notesTab?.setAttribute("aria-selected", String(!isTranscript));
+
+    if (transcriptCard) transcriptCard.hidden = !isTranscript;
+    if (notesPanel) notesPanel.hidden = isTranscript;
+}
+
+
+transcriptTab?.addEventListener("click", () => switchResultsTab("transcript"));
+notesTab?.addEventListener("click", () => switchResultsTab("notes"));
+
+
+/* ==========================================================================
+   Notes
+   ========================================================================== */
+
+const notesIdle = document.getElementById("notes-idle");
+const notesLoading = document.getElementById("notes-loading");
+const notesError = document.getElementById("notes-error");
+const notesErrorMessage = document.getElementById("notes-error-message");
+const notesRetryButton = document.getElementById("notes-retry-button");
+const notesContent = document.getElementById("notes-content");
+const generateNotesButton = document.getElementById("generate-notes-button");
+
+
+let analysisId = null;
+let notesData = null;
+let notesRequestToken = 0;
+let mermaidReady = false;
+
+
+generateNotesButton?.addEventListener("click", requestNotes);
+notesRetryButton?.addEventListener("click", requestNotes);
+
+
+function showNotesState(state) {
+    const visible = {
+        idle: state === "idle",
+        loading: state === "loading",
+        error: state === "error",
+        content: state === "content",
+    };
+
+    if (notesIdle) notesIdle.hidden = !visible.idle;
+    if (notesLoading) notesLoading.hidden = !visible.loading;
+    if (notesError) notesError.hidden = !visible.error;
+    if (notesContent) notesContent.hidden = !visible.content;
+}
+
+
+function resetNotesState() {
+    notesRequestToken += 1;
+    notesData = null;
+
+    if (notesContent) notesContent.innerHTML = "";
+
+    showNotesState("idle");
+}
+
+
+async function requestNotes() {
+    if (!analysisId) {
+        notesErrorMessage.textContent =
+            "No analysis is available for notes. "
+            + "Please analyze the audio again.";
+        showNotesState("error");
+        return;
+    }
+
+    const token = ++notesRequestToken;
+
+    showNotesState("loading");
+
+    try {
+        const response = await fetch("/api/notes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                analysis_id: analysisId,
+            }),
+        });
+
+        let data = null;
+
+        try {
+            data = await response.json();
+        } catch {
+            data = null;
+        }
+
+        if (token !== notesRequestToken) {
+            return;
+        }
+
+        if (response.ok && data && data.success === true) {
+            notesData = data.notes;
+            renderNotes(notesData);
+            showNotesState("content");
+            return;
+        }
+
+        notesErrorMessage.textContent = getNotesErrorMessage(response, data);
+        showNotesState("error");
+    } catch (error) {
+        if (token !== notesRequestToken) {
+            return;
+        }
+
+        console.error("Notes request failed:", error);
+
+        notesErrorMessage.textContent =
+            "Unable to connect to the notes service. Please try again.";
+        showNotesState("error");
+    }
+}
+
+
+function getNotesErrorMessage(response, data) {
+    if (
+        data &&
+        typeof data.error === "string" &&
+        data.error.trim()
+    ) {
+        return data.error;
+    }
+
+    switch (response.status) {
+        case 400:
+            return "This transcript is too short to generate notes from.";
+
+        case 404:
+            return (
+                "This analysis is no longer available. "
+                + "Please analyze the audio again."
+            );
+
+        case 503:
+            return (
+                "The notes service is temporarily unavailable. "
+                + "Please try again shortly."
+            );
+
+        case 500:
+            return "Notes could not be generated. Please try again.";
+
+        default:
+            return (
+                "Something went wrong while generating notes. "
+                + "Please try again."
+            );
+    }
+}
+
+
+/* ==========================================================================
+   Notes rendering
+   ========================================================================== */
+
+function notesElement(tag, className, text) {
+    const element = document.createElement(tag);
+
+    if (className) element.className = className;
+
+    if (text !== undefined) element.textContent = text;
+
+    return element;
+}
+
+
+function notesSection(labelText) {
+    const section = notesElement("div", "notes-section");
+
+    section.appendChild(
+        notesElement("p", "panel-label notes-section-label", labelText)
+    );
+
+    return section;
+}
+
+
+function notesTimeButton(text, seconds) {
+    const button = notesElement("button", "notes-time", text);
+
+    button.type = "button";
+    button.title = "Jump to this timestamp";
+
+    button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        seekAudio(seconds);
+    });
+
+    return button;
+}
+
+
+function renderNotes(notes) {
+    if (!notesContent) return;
+
+    notesContent.innerHTML = "";
+
+    notesContent.appendChild(buildNotesHeader(notes));
+
+    const topics = Array.isArray(notes.topics) ? notes.topics : [];
+    const concepts = Array.isArray(notes.concepts) ? notes.concepts : [];
+    const contributions =
+        Array.isArray(notes.speaker_contributions)
+            ? notes.speaker_contributions
+            : [];
+    const actionItems =
+        Array.isArray(notes.action_items) ? notes.action_items : [];
+
+    if (topics.length) {
+        notesContent.appendChild(buildNotesTopics(topics));
+    }
+
+    if (concepts.length) {
+        notesContent.appendChild(buildNotesConcepts(concepts));
+    }
+
+    if (contributions.length) {
+        notesContent.appendChild(buildNotesContributions(contributions));
+    }
+
+    if (actionItems.length) {
+        notesContent.appendChild(buildNotesActions(actionItems));
+    }
+
+    if (notes.diagram) {
+        const section = notesSection("DIAGRAM");
+        const diagramBox = notesElement("div", "notes-diagram");
+
+        section.appendChild(diagramBox);
+        notesContent.appendChild(section);
+
+        renderNotesDiagram(notes.diagram, diagramBox, section);
+    }
+}
+
+
+function buildNotesHeader(notes) {
+    const header = notesElement("div", "notes-header");
+
+    const top = notesElement("div", "notes-header-top");
+    top.appendChild(notesElement("p", "panel-label", "NOTES"));
+
+    if (analysisId) {
+        const exportButton = notesElement("a", "notes-export-button", "Export .md");
+
+        exportButton.href = `/api/notes/${encodeURIComponent(analysisId)}/export`;
+        exportButton.setAttribute("download", "");
+
+        top.appendChild(exportButton);
+    }
+
+    header.appendChild(top);
+
+    const titleRow = notesElement("div", "notes-title-row");
+    titleRow.appendChild(
+        notesElement("h3", "notes-title", notes.title || "Session notes")
+    );
+
+    if (notes.mode) {
+        titleRow.appendChild(notesElement("span", "notes-mode", notes.mode));
+    }
+
+    header.appendChild(titleRow);
+
+    if (notes.tldr) {
+        header.appendChild(notesElement("p", "notes-tldr", notes.tldr));
+    }
+
+    return header;
+}
+
+
+function buildNotesTopics(topics) {
+    const section = notesSection("TOPIC TIMELINE");
+
+    for (const topic of topics) {
+        const row = notesElement("article", "notes-topic");
+
+        const time = notesTimeButton(
+            `${formatTime(topic.start)} → ${formatTime(topic.end)}`,
+            topic.start
+        );
+
+        const body = notesElement("div", "notes-topic-body");
+
+        body.appendChild(
+            notesElement("h4", "notes-topic-name", topic.name || "Untitled topic")
+        );
+
+        if (topic.summary) {
+            body.appendChild(
+                notesElement("p", "notes-topic-summary", topic.summary)
+            );
+        }
+
+        const points =
+            Array.isArray(topic.key_points)
+                ? topic.key_points.filter(Boolean)
+                : [];
+
+        if (points.length) {
+            const list = notesElement("ul", "notes-points");
+
+            for (const point of points) {
+                list.appendChild(notesElement("li", null, point));
+            }
+
+            body.appendChild(list);
+        }
+
+        row.appendChild(time);
+        row.appendChild(body);
+
+        row.addEventListener("click", () => seekAudio(topic.start));
+
+        row.tabIndex = 0;
+
+        row.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                seekAudio(topic.start);
+            }
+        });
+
+        section.appendChild(row);
+    }
+
+    return section;
+}
+
+
+function buildNotesConcepts(concepts) {
+    const section = notesSection("KEY CONCEPTS");
+
+    for (const concept of concepts) {
+        const row = notesElement("div", "notes-concept");
+
+        row.appendChild(
+            notesElement("div", "notes-concept-term", concept.term || "")
+        );
+
+        const body = notesElement("div", "notes-concept-body");
+
+        if (concept.definition) {
+            body.appendChild(
+                notesElement("p", "notes-concept-definition", concept.definition)
+            );
+        }
+
+        const stamps = Array.isArray(concept.timestamps) ? concept.timestamps : [];
+
+        if (stamps.length) {
+            const stampRow = notesElement("div", "notes-concept-stamps");
+
+            for (const stamp of stamps) {
+                stampRow.appendChild(
+                    notesTimeButton(formatTime(stamp), stamp)
+                );
+            }
+
+            body.appendChild(stampRow);
+        }
+
+        row.appendChild(body);
+        section.appendChild(row);
+    }
+
+    return section;
+}
+
+
+function buildNotesContributions(contributions) {
+    const section = notesSection("SPEAKER CONTRIBUTIONS");
+
+    for (const contribution of contributions) {
+        const row = notesElement("div", "notes-contribution");
+
+        row.dataset.speaker = contribution.speaker || "unknown";
+
+        row.appendChild(
+            notesElement(
+                "p",
+                "notes-contribution-speaker",
+                contribution.speaker || "unknown"
+            )
+        );
+
+        const points =
+            Array.isArray(contribution.points)
+                ? contribution.points.filter(Boolean)
+                : [];
+
+        if (points.length) {
+            const list = notesElement("ul", "notes-points");
+
+            for (const point of points) {
+                list.appendChild(notesElement("li", null, point));
+            }
+
+            row.appendChild(list);
+        }
+
+        section.appendChild(row);
+    }
+
+    return section;
+}
+
+
+function buildNotesActions(actionItems) {
+    const section = notesSection("ACTION ITEMS");
+
+    for (const item of actionItems) {
+        const row = notesElement("label", "notes-action");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+
+        row.appendChild(checkbox);
+        row.appendChild(
+            notesElement("span", "notes-action-task", item.task || "")
+        );
+
+        if (item.owner) {
+            row.appendChild(
+                notesElement("span", "notes-action-owner", item.owner)
+            );
+        }
+
+        if (item.timestamp !== null && item.timestamp !== undefined) {
+            row.appendChild(
+                notesTimeButton(formatTime(item.timestamp), item.timestamp)
+            );
+        }
+
+        section.appendChild(row);
+    }
+
+    return section;
+}
+
+
+/* ==========================================================================
+   Notes diagram (Mermaid)
+   ========================================================================== */
+
+async function renderNotesDiagram(definition, container, section) {
+    const mermaid = window.mermaid;
+
+    if (!mermaid || typeof mermaid.render !== "function") {
+        section.remove();
+        return;
+    }
+
+    if (!mermaidReady) {
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: "neutral",
+            fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        });
+
+        mermaidReady = true;
+    }
+
+    try {
+        const { svg } = await mermaid.render(
+            `notes-diagram-${Date.now()}`,
+            definition
+        );
+
+        container.innerHTML = svg;
+    } catch (error) {
+        console.warn("Diagram rendering failed:", error);
+        section.remove();
+    }
+}

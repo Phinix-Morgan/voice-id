@@ -38,190 +38,190 @@
     </section>
 
     <!-- Upload -->
-        <section class="upload-section">
+    <section class="upload-section">
 
-            <form id="upload-form" class="upload-card">
+        <form id="upload-form" class="upload-card">
 
-                <div class="source-switch" role="tablist" aria-label="Audio source">
+            <div class="source-switch" role="tablist" aria-label="Audio source">
+                <button
+                    type="button"
+                    class="source-tab active"
+                    id="upload-tab"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="upload-panel"
+                >
+                    <span class="source-tab-icon" aria-hidden="true">↑</span>
+                    Upload
+                </button>
+
+                <button
+                    type="button"
+                    class="source-tab"
+                    id="record-tab"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="record-panel"
+                >
+                    <span class="source-tab-icon source-tab-mic" aria-hidden="true"></span>
+                    Record
+                </button>
+            </div>
+
+            <input
+                id="audio-input"
+                name="audio"
+                type="file"
+                accept="audio/*"
+                hidden
+            >
+
+            <div
+                class="source-panel active"
+                id="upload-panel"
+                role="tabpanel"
+                aria-labelledby="upload-tab"
+            >
+                <label
+                    for="audio-input"
+                    class="upload-zone"
+                    id="upload-zone"
+                >
+                    <div class="upload-zone-inner">
+                        <div class="upload-icon">+</div>
+
+                        <div class="upload-title">
+                            Upload audio
+                        </div>
+
+                        <div class="upload-subtitle">
+                            WAV, MP3, AAC, M4A, FLAC, OGG or WEBM
+                        </div>
+
+                        <span class="browse-button">
+                            Browse files
+                        </span>
+                    </div>
+                </label>
+
+                <div class="selected-file" id="selected-file" hidden>
+                    <div class="selected-file-left">
+                        <span class="file-icon" aria-hidden="true">♪</span>
+                        <span id="file-name"></span>
+                    </div>
+
                     <button
                         type="button"
-                        class="source-tab active"
-                        id="upload-tab"
-                        role="tab"
-                        aria-selected="true"
-                        aria-controls="upload-panel"
+                        class="remove-file"
+                        id="remove-file"
+                        aria-label="Remove file"
                     >
-                        <span class="source-tab-icon" aria-hidden="true">↑</span>
-                        Upload
-                    </button>
-
-                    <button
-                        type="button"
-                        class="source-tab"
-                        id="record-tab"
-                        role="tab"
-                        aria-selected="false"
-                        aria-controls="record-panel"
-                    >
-                        <span class="source-tab-icon source-tab-mic" aria-hidden="true"></span>
-                        Record
+                        ×
                     </button>
                 </div>
+            </div>
 
-                <input
-                    id="audio-input"
-                    name="audio"
-                    type="file"
-                    accept="audio/*"
-                    hidden
-                >
+            <div
+                class="source-panel"
+                id="record-panel"
+                role="tabpanel"
+                aria-labelledby="record-tab"
+                hidden
+            >
+                <div class="recorder" id="recorder">
 
-                <div
-                    class="source-panel active"
-                    id="upload-panel"
-                    role="tabpanel"
-                    aria-labelledby="upload-tab"
-                >
-                    <label
-                        for="audio-input"
-                        class="upload-zone"
-                        id="upload-zone"
-                    >
-                        <div class="upload-zone-inner">
-                            <div class="upload-icon">+</div>
-
-                            <div class="upload-title">
-                                Upload audio
-                            </div>
-
-                            <div class="upload-subtitle">
-                                WAV, MP3, AAC, M4A, FLAC, OGG or WEBM
-                            </div>
-
-                            <span class="browse-button">
-                                Browse files
-                            </span>
+                    <div class="recorder-topline">
+                        <div class="recorder-status">
+                            <span class="recording-dot" aria-hidden="true"></span>
+                            <span id="recorder-status-text">Ready to record</span>
                         </div>
-                    </label>
 
-                    <div class="selected-file" id="selected-file" hidden>
-                        <div class="selected-file-left">
-                            <span class="file-icon" aria-hidden="true">♪</span>
-                            <span id="file-name"></span>
+                        <time
+                            class="recording-time"
+                            id="recording-time"
+                            aria-label="Recording duration"
+                        >
+                            00:00
+                        </time>
+                    </div>
+
+                    <div
+                        class="waveform-shell"
+                        id="waveform-shell"
+                        aria-hidden="true"
+                    >
+                        <div class="waveform-glow"></div>
+                        <canvas
+                            id="recording-waveform"
+                            class="recording-waveform"
+                        ></canvas>
+                        <div class="waveform-centerline"></div>
+                    </div>
+
+                    <div class="recorder-controls">
+                        <button
+                            type="button"
+                            class="record-button"
+                            id="record-button"
+                            aria-label="Start recording"
+                        >
+                            <span class="record-button-core"></span>
+                            <span class="record-button-ring"></span>
+                        </button>
+
+                        <div class="recorder-copy">
+                            <strong id="recorder-action">
+                                Start recording
+                            </strong>
+                            <span id="recorder-hint">
+                                Allow microphone access to begin.
+                            </span>
                         </div>
 
                         <button
                             type="button"
-                            class="remove-file"
-                            id="remove-file"
-                            aria-label="Remove file"
-                        >
-                            ×
-                        </button>
-                    </div>
-                </div>
-
-                <div
-                    class="source-panel"
-                    id="record-panel"
-                    role="tabpanel"
-                    aria-labelledby="record-tab"
-                    hidden
-                >
-                    <div class="recorder" id="recorder">
-
-                        <div class="recorder-topline">
-                            <div class="recorder-status">
-                                <span class="recording-dot" aria-hidden="true"></span>
-                                <span id="recorder-status-text">Ready to record</span>
-                            </div>
-
-                            <time
-                                class="recording-time"
-                                id="recording-time"
-                                aria-label="Recording duration"
-                            >
-                                00:00
-                            </time>
-                        </div>
-
-                        <div
-                            class="waveform-shell"
-                            id="waveform-shell"
-                            aria-hidden="true"
-                        >
-                            <div class="waveform-glow"></div>
-                            <canvas
-                                id="recording-waveform"
-                                class="recording-waveform"
-                            ></canvas>
-                            <div class="waveform-centerline"></div>
-                        </div>
-
-                        <div class="recorder-controls">
-                            <button
-                                type="button"
-                                class="record-button"
-                                id="record-button"
-                                aria-label="Start recording"
-                            >
-                                <span class="record-button-core"></span>
-                                <span class="record-button-ring"></span>
-                            </button>
-
-                            <div class="recorder-copy">
-                                <strong id="recorder-action">
-                                    Start recording
-                                </strong>
-                                <span id="recorder-hint">
-                                    Allow microphone access to begin.
-                                </span>
-                            </div>
-
-                            <button
-                                type="button"
-                                class="secondary-recorder-button"
-                                id="clear-recording"
-                                hidden
-                            >
-                                Re-record
-                            </button>
-                        </div>
-
-                        <div
-                            class="recording-preview"
-                            id="recording-preview"
+                            class="secondary-recorder-button"
+                            id="clear-recording"
                             hidden
                         >
-                            <div class="preview-meta">
-                                <span class="preview-icon" aria-hidden="true">♪</span>
-                                <div>
-                                    <strong>Recording ready</strong>
-                                    <span id="recording-file-name">
-                                        voice-id-recording.webm
-                                    </span>
-                                </div>
-                            </div>
+                            Re-record
+                        </button>
+                    </div>
 
-                            <audio id="recording-preview-audio" controls></audio>
+                    <div
+                        class="recording-preview"
+                        id="recording-preview"
+                        hidden
+                    >
+                        <div class="preview-meta">
+                            <span class="preview-icon" aria-hidden="true">♪</span>
+                            <div>
+                                <strong>Recording ready</strong>
+                                <span id="recording-file-name">
+                                    voice-id-recording.webm
+                                </span>
+                            </div>
                         </div>
 
+                        <audio id="recording-preview-audio" controls></audio>
                     </div>
+
                 </div>
+            </div>
 
-                <button
-                    type="submit"
-                    class="analyze-button"
-                    id="analyze-button"
-                    disabled
-                >
-                    <span>Analyze audio</span>
-                    <span class="analyze-arrow" aria-hidden="true">→</span>
-                </button>
+            <button
+                type="submit"
+                class="analyze-button"
+                id="analyze-button"
+                disabled
+            >
+                <span>Analyze audio</span>
+                <span class="analyze-arrow" aria-hidden="true">→</span>
+            </button>
 
-            </form>
+        </form>
 
-        </section>
+    </section>
 
     <!-- Processing -->
     <section class="processing" id="processing" hidden>
@@ -273,7 +273,7 @@
             <div class="results-heading">
                 <span class="result-badge">RESULT</span>
                 <p class="eyebrow">ANALYSIS RESULT</p>
-                <h2>Speaker transcript</h2>
+                <h2>Results</h2>
             </div>
 
             <button type="button" class="reset-button" id="reset-button">
@@ -313,8 +313,33 @@
             <div class="speaker-list" id="speaker-list" role="list" aria-label="Speakers"></div>
         </div>
 
+        <!-- Result view switcher -->
+        <div class="results-tabs" role="tablist" aria-label="Result views">
+            <button
+                type="button"
+                class="results-tab active"
+                id="transcript-tab"
+                role="tab"
+                aria-selected="true"
+                aria-controls="transcript-card"
+            >
+                Transcript
+            </button>
+
+            <button
+                type="button"
+                class="results-tab"
+                id="notes-tab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="notes-panel"
+            >
+                Notes
+            </button>
+        </div>
+
         <!-- Transcript -->
-        <div class="result-card transcript-card">
+        <div class="result-card transcript-card" id="transcript-card" role="tabpanel">
             <div class="transcript-header">
                 <div>
                     <p class="panel-label">TRANSCRIPT</p>
@@ -326,9 +351,70 @@
             <div class="transcript" id="transcript"></div>
         </div>
 
+        <!-- Notes -->
+        <div
+            class="result-card notes-panel"
+            id="notes-panel"
+            role="tabpanel"
+            aria-labelledby="notes-tab"
+            hidden
+        >
+
+            <!-- Idle -->
+            <div class="notes-idle" id="notes-idle">
+                <p class="panel-label">NOTES</p>
+                <p class="card-title">Context-aware session notes</p>
+                <p class="notes-idle-description">
+                    Generate structured notes from this conversation — a summary,
+                    a clickable topic timeline, key concepts, speaker
+                    contributions, action items and a diagram.
+                </p>
+
+                <button
+                    type="button"
+                    class="notes-generate-button"
+                    id="generate-notes-button"
+                >
+                    <span>Generate notes</span>
+                    <span class="analyze-arrow" aria-hidden="true">→</span>
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div class="notes-loading" id="notes-loading" hidden>
+                <span class="notes-spinner" aria-hidden="true"></span>
+                <div>
+                    <p class="card-title">Generating notes</p>
+                    <p class="notes-loading-hint">
+                        Summarizing · Extracting concepts · Building the diagram.
+                        This can take up to a minute.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div class="notes-error" id="notes-error" hidden>
+                <p class="card-title">Notes could not be generated</p>
+                <p class="notes-error-message" id="notes-error-message"></p>
+
+                <button
+                    type="button"
+                    class="notes-retry-button"
+                    id="notes-retry-button"
+                >
+                    Try again
+                </button>
+            </div>
+
+            <!-- Rendered notes -->
+            <div class="notes-content" id="notes-content" hidden></div>
+
+        </div>
+
     </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

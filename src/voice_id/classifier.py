@@ -7,7 +7,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 
-KNOWN_DIR = Path("data/processed/known")
+KNOWN_DIR = Path("data/profiles/known")
 
 TRAIN_PER_SPEAKER = 10
 TEST_PER_SPEAKER = 5

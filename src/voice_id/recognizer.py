@@ -12,11 +12,11 @@ CLASSIFIER_PATH = Path(
 )
 
 KNOWN_DIR = Path(
-    "data/processed/known"
+    "data/profiles/known"
 )
 
 EVALUATION_DIR = Path(
-    "data/processed/evaluation"
+    "data/evaluation"
 )
 
 DEVICE = (
